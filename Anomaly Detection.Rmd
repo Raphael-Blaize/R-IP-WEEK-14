@@ -1,0 +1,64 @@
+---
+title: "Anomaly"
+author: "Raphael"
+date: "7/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importing the libraries and previewing the data 
+
+```{r}
+library(tidyverse)
+library(anomalize)
+library(tibbletime)
+library(dplyr)
+library(magrittr)
+```
+
+
+```{r}
+path = 'http://bit.ly/CarreFourSalesDataset' 
+```
+
+          
+```{r}
+# Grouping by server and converting to tibbletime
+s = read.csv(path) %>% group_by(Date) %>%
+   mutate(Date = as.Date (Date, format="%m/%d/%Y")) %>% as_tbl_time(index = Date)
+head(s)
+```
+
+```{r}
+class(s)
+```
+
+```{r}
+str(s)
+```
+
+```{r}
+#Cheking for null values in our sales column
+colSums(is.na(s))
+```
+
+```{r}
+# Anomaly Detection
+#s_anomalized = sales %>% summarise(Orders = sum(s)) %>%
+#time_decompose(Orders) %>%
+#    anomalize(remainder, alpha = 0.25, max_anoms = 0.2) %>%
+#    time_recompose() %>%
+#    plot_anomalies(time_recomposed = TRUE) +
+#    ggtitle("alpha = 0.25, max_anoms = 0.2")
+    
+#
+```
+
+
+
+## CONCLUSION
+* Most anomalies occurred in the months of February and March.
+* Least anomalies occurred in the month of January.

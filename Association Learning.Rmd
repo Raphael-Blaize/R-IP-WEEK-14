@@ -1,0 +1,97 @@
+---
+title: "Association"
+author: "Raphael"
+date: "7/21/2021"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importing the libraries and previewing the data 
+
+```{r}
+#install.packages('arules')
+library(arules)
+```
+
+
+## READING DATA
+```{r}
+df =read.transactions("http://bit.ly/SupermarketDatasetII", sep = ",")
+```
+
+### Checking the data
+```{r}
+head(df)
+```
+
+```{r}
+tail(df)
+```
+
+
+```{r}
+summary(df)
+```
+
+
+### Cleaning the data
+```{r}
+# Previewing our first 5 rows
+#
+inspect(df[1:5])
+```
+
+
+## Association Rules
+```{r}
+items = as.data.frame(itemLabels(df))
+colnames(items) <- "Item"
+head(items, 5)  
+```
+
+
+```{r}
+# Exploring the frequency of some articles 
+itemFrequency(df[, 8:10],type = "absolute")
+round(itemFrequency(df[, 8:10],type = "relative")*100,2)
+```
+
+```{r}
+# Displaying top 5 most common items in the dataset 
+# 
+par(mfrow = c(1, 2))
+# plot the frequency of items
+itemFrequencyPlot(df, topN = 5,col="darkgreen")
+itemFrequencyPlot(df, support = 0.1,col="darkred")
+```
+
+```{r}
+# Building a model based on association  
+ass = apriori (df, parameter = list(supp = 0.001, conf = 0.8))
+ass
+```
+
+
+```{r}
+# Ordering the rules by level of confidence
+ass = sort(ass, by="lift", decreasing=TRUE)
+inspect(ass[1:10])
+```
+
+```{r}
+# Ordering these rules by level of confidence
+ass = sort(ass, by="confidence", decreasing=TRUE)
+inspect(ass[1:10])
+```
+
+## RECOMMENDATIONS
+
+1. The top 3 purchased items were: mineral water, eggs, pasta,
+
+2. Judging by the confidence interval, cake, eggs, pasta, meatballs and mineral water should be placed in aisles that are closer to each other since there 
+
+3. Foods high in protein should also be placed  together since customers tend to purchase them together

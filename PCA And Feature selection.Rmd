@@ -1,0 +1,161 @@
+---
+title: "DIMENSIONALITY REDUCTION"
+author: "Raphael"
+date: "7/21/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Importing the libraries and previewing the data 
+```{r}
+library(stats)
+library(plyr)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(caret)
+library(psych)
+library(rpart)
+library(devtools)
+library(ggbiplot)
+```
+
+#### Loading and previewing the data
+```{r}
+df = read.csv("http://bit.ly/CarreFourDataset")
+```
+
+#### Checking the dataset
+```{r}
+head(df)
+```
+
+```{r}
+summary(df)
+```
+
+
+#### Cleaning the data
+```{r}
+# Checking null values
+colSums(is.na(df))
+```
+
+```{r}
+# Checking to see whether we have duplicates in our data
+dim(df[duplicated(df), ])
+```
+
+```{r}
+# check for outliers/anomalies
+numerical = df[, !sapply(df, is.character)]
+```
+
+```{r}
+par(mfrow = c(1,1), mar = c(5,4,2,2))
+boxplot(numerical[, c(1:2)], main='BoxPlots')
+boxplot(numerical[, c(3,5)])
+boxplot(numerical[, c(6,7)])
+boxplot(numerical[ ,c(4,8)])
+```
+
+
+### PCA
+```{r}
+# creating a dataset for PCA
+sales = df[,c(6,7,8,12,13,14,15,16)]
+head(sales)
+```
+
+```{r}
+# Removing  gross margin percentage column
+sales = subset(sales, select = -c(gross.margin.percentage, Total) )
+```
+
+
+```{r}
+#Cheking whether the column has been removed
+head(sales)
+```
+```{r}
+#solution
+pca <- prcomp(sales, scale=TRUE)
+summary(pca)
+```
+The first three principal components accounted for 98% of the total variance 
+
+```{r}
+#library(Rcpp)
+#ggbiplot(pca, groups = as.factor(df$Branch), ellipse = TRUE, circle = TRUE)
+```
+
+```{r}
+#ggbiplot(pca, groups = as.factor(df$Customer.type), ellipse = TRUE, circle = TRUE)
+```
+
+```{r}
+#ggbiplot(pca, groups = as.factor(df$Product.line), ellipse = TRUE, circle = TRUE)
+```
+
+```{r}
+#ggbiplot(pca, groups = as.factor(df$Payment), ellipse = TRUE, circle = TRUE)
+```
+
+
+### FEATURE SELECTION USING R
+#### Filter Method
+```{r}
+library(caret)
+library(corrplot)
+```
+
+```{r}
+head(sales, 5)
+```
+
+```{r}
+correlationMatrix = cor(sales)
+correlationMatrix
+```
+
+```{r}
+highlyCorrelated = findCorrelation(correlationMatrix, cutoff=0.75)
+highlyCorrelated
+```
+
+```{r}
+# Highly correlated attributes
+highlyCorrelated
+names(sales[,highlyCorrelated])
+```
+
+```{r}
+# Removing Redundant Features 
+# ---
+# 
+hc = sales[-highlyCorrelated]
+# Performing our graphical comparison
+# ---
+# 
+par(mfrow = c(1, 2))
+corrplot(correlationMatrix, order = "hclust")
+corrplot(cor(hc), order = "hclust")
+```
+
+
+#### Wrapper Method
+```{r}
+# Sequential forward greedy search (default)
+library(clustvarsel)
+library(mclust)
+out = clustvarsel(sales)
+out
+```
+
+
+After employing wrapper method of feature selection, we get quantity, cogs and unit price as the most relevant features to use in building our machine learning model.
+
